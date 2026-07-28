@@ -21,8 +21,37 @@ class MyPortfolioApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         useMaterial3: true,
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color.fromARGB(255, 16, 17, 17),
+        brightness: Brightness.dark,
+        scaffoldBackgroundColor: const Color(0xFF090B12),
+        splashFactory: InkRipple.splashFactory,
+        colorScheme: const ColorScheme.dark(
+          primary: Color(0xFF5AF5B4),
+          secondary: Color(0xFF4D9DFF),
+          surface: Color(0xFF111827),
+          surfaceTint: Color(0xFF070A13),
+          onPrimary: Colors.black,
+          onSecondary: Colors.white,
+        ),
+        textTheme: ThemeData.dark().textTheme.apply(
+          bodyColor: Colors.white70,
+          displayColor: Colors.white,
+        ),
+        cardTheme: const CardThemeData(
+          color: Color(0xFF111827),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.all(Radius.circular(20)),
+          ),
+          elevation: 6,
+          margin: EdgeInsets.zero,
+        ),
+        inputDecorationTheme: InputDecorationTheme(
+          filled: true,
+          fillColor: const Color(0xFF131A2B),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(16),
+            borderSide: BorderSide.none,
+          ),
+          labelStyle: const TextStyle(color: Colors.white60),
         ),
       ),
       home: const PortfolioHomePage(),
@@ -278,17 +307,18 @@ class _PortfolioHomePageState extends State<PortfolioHomePage> {
                   await loadRecentFeedback();
                   if (!mounted) return;
                   Navigator.of(dialogContext).pop();
-                  if (Navigator.of(dialogContext).canPop()) {
-                    ScaffoldMessenger.of(dialogContext).showSnackBar(
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(content: Text('Feedback updated')),
                     );
                   }
                 } catch (e) {
                   if (!mounted) return;
-                  if (!mounted) return;
-                  ScaffoldMessenger.of(
-                    dialogContext,
-                  ).showSnackBar(SnackBar(content: Text('Update failed: $e')));
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Update failed: $e')),
+                    );
+                  }
                 }
               },
               child: const Text('Save'),
@@ -301,127 +331,225 @@ class _PortfolioHomePageState extends State<PortfolioHomePage> {
     nameController.dispose();
     phoneController.dispose();
     descriptionController.dispose();
-  }// End of editFeedbackItem
+  } // End of editFeedbackItem
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('My Portfolio'),
-        centerTitle: true,
-        backgroundColor: const Color.fromARGB(255, 16, 17, 17),
-        titleTextStyle: const TextStyle(
-          fontSize: 20,
-          fontWeight: FontWeight.bold,
-          color: Colors.white,
-        ),
+    final gradientBackground = BoxDecoration(
+      gradient: LinearGradient(
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+        colors: const [Color(0xFF070A13), Color(0xFF121931)],
       ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start, //
-            children: [
-              Center(
-                child: Column(
-                  children: [
-                    CircleAvatar(
-                      radius: 62,
-                      backgroundColor: const Color.fromARGB(255, 17, 17, 17),
-                      child: ClipOval(
-                        child: Image.asset(
-                          'assets/profile.png',
-                          width: 120,
-                          height: 120,
-                          fit: BoxFit.cover,
+    );
+
+    return Scaffold(
+      extendBodyBehindAppBar: true,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        centerTitle: true,
+        title: const Text('My Portfolio'),
+      ),
+      body: Container(
+        decoration: gradientBackground,
+        child: SafeArea(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                AnimatedScale(
+                  scale: 1,
+                  duration: const Duration(milliseconds: 700),
+                  curve: Curves.easeOutBack,
+                  child: Center(
+                    child: Container(
+                      padding: const EdgeInsets.all(18),
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFF111827), Color(0xFF17233C)],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
                         ),
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    Text(
-                      'Akarsh',
-                      style: Theme.of(context).textTheme.headlineMedium
-                          ?.copyWith(fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'Flutter Developer - UI Enthusiast',
-                      style: Theme.of(context).textTheme.bodyLarge,
-                    ),
-                  ],
-                ),
-              ),
-
-              const SizedBox(height: 24),
-              buildSectionTitle('About Me'),
-              const SizedBox(height: 8),
-              const Text(
-                'I love building clean, beginner-friendly mobile apps with Flutter. '
-                'This portfolio app presents my skills, projects, and social links in one place.',
-              ),
-
-              const SizedBox(height: 24),
-              buildSectionTitle('Projects'),
-              const SizedBox(height: 8),
-              ...projects.map((project) {
-                final projectName = project['name'] as String;
-                final description = project['description'] as String;
-                final isSelected = selectedProject == projectName;
-
-                return Padding(
-                  padding: const EdgeInsets.only(bottom: 10),
-                  child: Card(
-                    child: Padding(
-                      padding: const EdgeInsets.all(12),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          ElevatedButton.icon(
-                            onPressed: () {
-                              setState(() {
-                                selectedProject = isSelected
-                                    ? ''
-                                    : projectName; // Toggle selection
-                              });
-                            },
-                            icon: const Icon(Icons.apps_rounded),
-                            label: Text(projectName),
+                        borderRadius: BorderRadius.circular(28),
+                        boxShadow: [
+                          const BoxShadow(
+                            color: Color.fromRGBO(0, 0, 0, 0.35),
+                            blurRadius: 26,
+                            offset: Offset(0, 14),
                           ),
-                          if (isSelected) ...[
-                            const SizedBox(height: 8),
-                            Text(description),
-                          ],
+                        ],
+                      ),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(4),
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              gradient: const LinearGradient(
+                                colors: [Color(0xFF5AF5B4), Color(0xFF4D9DFF)],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                              ),
+                            ),
+                            child: CircleAvatar(
+                              radius: 68,
+                              backgroundColor: const Color(0xFF070A13),
+                              child: ClipOval(
+                                child: Image.asset(
+                                  'assets/profile.png',
+                                  width: 120,
+                                  height: 120,
+                                  fit: BoxFit.cover,
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 14),
+                          Text(
+                            'Prajwal',
+                            style: Theme.of(context).textTheme.headlineSmall
+                                ?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
+                          ),
+                          const SizedBox(height: 6),
+                          Text(
+                            'Flutter Developer • UI Enthusiast',
+                            style: Theme.of(context).textTheme.bodyMedium
+                                ?.copyWith(color: Colors.white70),
+                            textAlign: TextAlign.center,
+                          ),
                         ],
                       ),
                     ),
                   ),
-                );
-              }),
-
-              const SizedBox(height: 24),
-              buildSectionTitle('Leave Feedback'),
-              const SizedBox(height: 8),
-              Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(12),
-                  child: Column(
+                ),
+                const SizedBox(height: 26),
+                buildSectionTitle('About Me'),
+                const SizedBox(height: 10),
+                buildInfoCard(
+                  const Text(
+                    'I love building beautiful mobile apps that feel smooth, bold, and simple. '
+                    'This portfolio blends animation, custom buttons, and modern card styles so visitors can explore projects quickly.',
+                  ),
+                ),
+                const SizedBox(height: 24),
+                buildSectionTitle('Projects'),
+                const SizedBox(height: 12),
+                ...projects.map((project) {
+                  final projectName = project['name'] as String;
+                  final description = project['description'] as String;
+                  final isSelected = selectedProject == projectName;
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 14),
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 400),
+                      curve: Curves.easeInOut,
+                      decoration: BoxDecoration(
+                        gradient: isSelected
+                            ? const LinearGradient(
+                                colors: [Color(0xFF1C2B52), Color(0xFF0E142A)],
+                              )
+                            : const LinearGradient(
+                                colors: [Color(0xFF0F172A), Color(0xFF111827)],
+                              ),
+                        borderRadius: BorderRadius.circular(22),
+                        border: Border.all(
+                          color: isSelected
+                              ? const Color(0xFF5AF5B4)
+                              : Colors.white12,
+                          width: 1.4,
+                        ),
+                      ),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(22),
+                        child: Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                            onTap: () {
+                              setState(() {
+                                selectedProject = isSelected ? '' : projectName;
+                              });
+                            },
+                            child: Padding(
+                              padding: const EdgeInsets.all(18),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        child: Text(
+                                          projectName,
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .titleLarge
+                                              ?.copyWith(
+                                                fontWeight: FontWeight.bold,
+                                                color: Colors.white,
+                                              ),
+                                        ),
+                                      ),
+                                      Icon(
+                                        isSelected
+                                            ? Icons
+                                                  .keyboard_double_arrow_up_rounded
+                                            : Icons
+                                                  .keyboard_double_arrow_down_rounded,
+                                        color: isSelected
+                                            ? const Color(0xFF5AF5B4)
+                                            : Colors.white54,
+                                      ),
+                                    ],
+                                  ),
+                                  AnimatedSize(
+                                    duration: const Duration(milliseconds: 300),
+                                    curve: Curves.easeInOut,
+                                    child: ConstrainedBox(
+                                      constraints: isSelected
+                                          ? const BoxConstraints()
+                                          : const BoxConstraints(maxHeight: 0),
+                                      child: Padding(
+                                        padding: const EdgeInsets.only(top: 14),
+                                        child: Text(
+                                          description,
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .bodyMedium
+                                              ?.copyWith(color: Colors.white70),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  );
+                }),
+                const SizedBox(height: 24),
+                buildSectionTitle('Leave Feedback'),
+                const SizedBox(height: 12),
+                buildInfoCard(
+                  Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       TextField(
                         controller: nameController,
-                        decoration: const InputDecoration(
-                          labelText: 'Name',
-                          border: OutlineInputBorder(),
-                        ),
+                        decoration: const InputDecoration(labelText: 'Name'),
                       ),
                       const SizedBox(height: 12),
                       TextField(
                         controller: phoneController,
                         keyboardType: TextInputType.phone,
-                        decoration: const InputDecoration(
-                          labelText: 'Phone',
-                          border: OutlineInputBorder(),
-                        ),
+                        decoration: const InputDecoration(labelText: 'Phone'),
                       ),
                       const SizedBox(height: 12),
                       TextField(
@@ -429,105 +557,103 @@ class _PortfolioHomePageState extends State<PortfolioHomePage> {
                         maxLines: 4,
                         decoration: const InputDecoration(
                           labelText: 'Your feedback',
-                          border: OutlineInputBorder(),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      Align(
+                        alignment: Alignment.centerRight,
+                        child: ElevatedButton.icon(
+                          onPressed: isSubmitting ? null : submitFeedback,
+                          style: ElevatedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(
+                              vertical: 16,
+                              horizontal: 22,
+                            ),
+                            backgroundColor: const Color(0xFF5AF5B4),
+                            foregroundColor: Colors.black,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                          ),
+                          icon: isSubmitting
+                              ? const SizedBox(
+                                  width: 18,
+                                  height: 18,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: Colors.black,
+                                  ),
+                                )
+                              : const Icon(Icons.send_rounded),
+                          label: Text(
+                            isSubmitting ? 'Sending...' : 'Send Feedback',
+                          ),
                         ),
                       ),
                       const SizedBox(height: 12),
-                      ElevatedButton.icon(
-                        onPressed: isSubmitting ? null : submitFeedback,
-                        icon: isSubmitting
-                            ? const SizedBox(
-                                width: 16,
-                                height: 16,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
+                      AnimatedSwitcher(
+                        duration: const Duration(milliseconds: 300),
+                        child: feedbackMessage.isEmpty
+                            ? const SizedBox.shrink()
+                            : Text(
+                                feedbackMessage,
+                                key: ValueKey(feedbackMessage),
+                                style: TextStyle(
+                                  color:
+                                      feedbackMessage.contains('successfully')
+                                      ? Colors.greenAccent
+                                      : Colors.redAccent,
+                                  fontWeight: FontWeight.w600,
                                 ),
-                              )
-                            : const Icon(Icons.send),
-                        label: Text(
-                          isSubmitting ? 'Sending...' : 'Send Feedback',
-                        ),
+                              ),
                       ),
-                      if (feedbackMessage.isNotEmpty) ...[
-                        const SizedBox(height: 8),
-                        Text(
-                          feedbackMessage,
-                          style: TextStyle(
-                            color: feedbackMessage.contains('successfully')
-                                ? Colors.green
-                                : Colors.red,
-                          ),
-                        ),
-                      ],
                     ],
                   ),
                 ),
-              ),
-
-              const SizedBox(height: 24),
-              buildSectionTitle('Recent Feedback'),
-              const SizedBox(height: 8),
-              if (isLoadingFeedback)
-                const Center(child: CircularProgressIndicator())
-              else if (recentFeedbacks.isEmpty)
-                const Text('No feedback yet.')
-              else
-                ListView.separated(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemCount: recentFeedbacks.length,
-                  separatorBuilder: (_, _) => const SizedBox(height: 8),
-                  itemBuilder: (context, index) {
-                    final feedback = recentFeedbacks[index];
-                    return Card(
-                      child: ListTile(
-                        title: Text(feedback['name']?.toString() ?? 'No name'),
-                        subtitle: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(feedback['description']?.toString() ?? ''),
-                            const SizedBox(height: 4),
-                            Text(feedback['phone']?.toString() ?? ''),
-                          ],
+                const SizedBox(height: 24),
+                buildSectionTitle('Recent Feedback'),
+                const SizedBox(height: 12),
+                if (isLoadingFeedback)
+                  const Center(child: CircularProgressIndicator())
+                else if (recentFeedbacks.isEmpty)
+                  buildInfoCard(
+                    const Text(
+                      'No feedback yet. Be the first to share a message!',
+                    ),
+                  )
+                else
+                  Column(
+                    children: recentFeedbacks.map((feedback) {
+                      final id = feedback['id']?.toString() ?? '';
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 12),
+                        child: buildFeedbackTile(
+                          feedback,
+                          onEdit: () => editFeedbackItem(feedback),
+                          onDelete: id.isNotEmpty
+                              ? () => deleteFeedbackItem(id)
+                              : null,
                         ),
-                        trailing: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            IconButton(
-                              icon: const Icon(Icons.edit),
-                              onPressed: () => editFeedbackItem(feedback),
-                            ),
-                            IconButton(
-                              icon: const Icon(Icons.delete),
-                              onPressed: () {
-                                final id = feedback['id']?.toString();
-                                if (id != null && id.isNotEmpty) {
-                                  deleteFeedbackItem(id);
-                                }
-                              },
-                            ),
-                          ],
-                        ),
-                      ),
+                      );
+                    }).toList(),
+                  ),
+                const SizedBox(height: 24),
+                buildSectionTitle('Social Media'),
+                const SizedBox(height: 12),
+                Wrap(
+                  spacing: 12,
+                  runSpacing: 12,
+                  children: socialLinks.map((link) {
+                    return SocialLinkChip(
+                      icon: link['icon'] as IconData,
+                      label: link['label'] as String,
+                      url: link['url'] as String,
                     );
-                  },
+                  }).toList(),
                 ),
-
-              const SizedBox(height: 24),
-              buildSectionTitle('Social Media'),
-              const SizedBox(height: 8),
-              Wrap(
-                spacing: 12,
-                runSpacing: 12,
-                children: socialLinks.map((link) {
-                  return SocialLinkChip(
-                    icon: link['icon'] as IconData,
-                    label: link['label'] as String,
-                    url: link['url'] as String,
-                  );
-                }).toList(),
-              ),
-            ],
+                const SizedBox(height: 24),
+              ],
+            ),
           ),
         ),
       ),
@@ -537,7 +663,87 @@ class _PortfolioHomePageState extends State<PortfolioHomePage> {
   Widget buildSectionTitle(String title) {
     return Text(
       title,
-      style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+        fontWeight: FontWeight.bold,
+        color: Colors.white,
+      ),
+    );
+  }
+
+  Widget buildInfoCard(Widget child) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: const Color.fromRGBO(17, 24, 39, 0.98),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: Colors.white10),
+        boxShadow: [
+          const BoxShadow(
+            color: Color.fromRGBO(0, 0, 0, 0.25),
+            blurRadius: 24,
+            offset: Offset(0, 10),
+          ),
+        ],
+      ),
+      child: child,
+    );
+  }
+
+  Widget buildFeedbackTile(
+    Map<String, dynamic> feedback, {
+    required VoidCallback onEdit,
+    required VoidCallback? onDelete,
+  }) {
+    return Container(
+      decoration: BoxDecoration(
+        color: const Color(0xFF0F172A),
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(color: Colors.white10),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              feedback['name']?.toString() ?? 'No name',
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              feedback['description']?.toString() ?? '',
+              style: Theme.of(
+                context,
+              ).textTheme.bodyMedium?.copyWith(color: Colors.white70),
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Chip(
+                  backgroundColor: const Color(0xFF17233C),
+                  label: Text(
+                    feedback['phone']?.toString() ?? '',
+                    style: const TextStyle(color: Colors.white70),
+                  ),
+                ),
+                const Spacer(),
+                IconButton(
+                  icon: const Icon(Icons.edit, color: Color(0xFF5AF5B4)),
+                  onPressed: onEdit,
+                ),
+                IconButton(
+                  icon: const Icon(Icons.delete, color: Colors.redAccent),
+                  onPressed: onDelete,
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

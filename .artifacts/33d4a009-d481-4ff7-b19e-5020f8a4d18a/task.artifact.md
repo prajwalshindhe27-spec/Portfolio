@@ -1,0 +1,4 @@
+- [x] Generate release keystore
+- [x] Create `android/key.properties`
+- [x] Update `android/app/build.gradle.kts` for release signing
+- [ ] Build release APK (User action required: Enable Developer Mode)

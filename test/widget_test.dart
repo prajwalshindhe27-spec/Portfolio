@@ -14,7 +14,7 @@ void main() {
     await tester.pumpWidget(const MyPortfolioApp());
 
     expect(find.text('My Portfolio'), findsOneWidget);
-    expect(find.text('Akarsh'), findsOneWidget);
+    expect(find.text('Prajwal'), findsOneWidget);
     expect(find.text('Projects'), findsOneWidget);
     expect(find.text('Social Media'), findsOneWidget);
   });
